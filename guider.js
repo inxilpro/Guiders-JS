@@ -13,8 +13,8 @@
  * Enjoy!
  */
 
-(function($) {
-window.guider = (function(){
+
+var guider = (function($){
   var guider = {
     _defaultSettings: {
       attachTo: null,
@@ -22,6 +22,7 @@ window.guider = (function(){
       buttonCustomHTML: "",
       description: "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
       isHashable: true,
+      onShow: null,
       overlay: false,
       position: 0, // 1-12 follows an analog clock, 0 means centered
       title: "Sample title goes here",
@@ -232,7 +233,7 @@ window.guider = (function(){
       }
 
       // Extend those settings with passedSettings
-      myGuider = $.extend(true, {}, guider._defaultSettings, passedSettings);
+      myGuider = $.extend({}, guider._defaultSettings, passedSettings);
       myGuider.id = myGuider.id || String(Math.floor(Math.random() * 1000));
 
       var guiderElement = $(guider._htmlSkeleton);
@@ -245,6 +246,7 @@ window.guider = (function(){
 
       guiderElement.hide();
       guiderElement.appendTo("body");
+      guiderElement.attr("id", myGuider.id);
 
       // Ensure myGuider.attachTo is a jQuery element.
       if (typeof myGuider.attachTo !== "undefined" && myGuider !== null) {
@@ -288,13 +290,30 @@ window.guider = (function(){
       if (myGuider.overlay) {
         guider._showOverlay();
       }
+      
       guider._attach(myGuider);
+      
+      // You can use an onShow function to take some action before the guider is shown.
+      if (myGuider.onShow) {
+        myGuider.onShow(myGuider);
+      }
+      
       myGuider.elem.fadeIn("fast");
+
+      var windowHeight = $(window).height();
+      var scrollHeight = $(window).scrollTop();
+      var guiderOffset = myGuider.elem.offset();
+      var guiderElemHeight = myGuider.elem.height();
+
+      if (guiderOffset.top - scrollHeight < 0 ||
+          guiderOffset.top + guiderElemHeight + 40 > scrollHeight + windowHeight) {
+        window.scrollTo(0, Math.max(guiderOffset.top + (guiderElemHeight / 2) - (windowHeight / 2), 0));
+      }
+
       guider._currentGuiderID = id;
       return guider;
     }
   };
 
   return guider;
-}).call(this);
-}(jQuery));
+}).call(this, jQuery);
